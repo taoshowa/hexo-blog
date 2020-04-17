@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>vue-render directives</title>
+</head>
+
+<body>
+  <div id="app">
+    <div>
+      template<button v-clipbard:copy="doCopy" v-clipbard:success="onSuccess">{{btnText}}</button>
+    </div>
+    render<my-copy :text="btnText"></my-copy>
+  </div>
+
+  <script src="https://cdn.bootcss.com/vue/2.6.10/vue.js"></script>
+  <script >
+        
+    Vue.directive('clipbard', {
+      bind: function (el, binding) {
+        console.log(binding);
+        var cb = {
+          copy: (cb) => {
+            var text = typeof cb === 'function' ? cb() : cb
+            console.log(`directive copy content: ${text}`);
+          },
+          success: (cb) => {
+            cb()
+            console.log('directive copied');
+          }
+        }
+
+        el.addEventListener('click', function () {
+          binding.arg === 'copy' && binding.value && cb[binding.arg](binding.value)
+          // deal copy
+          setTimeout(() => {
+            binding.arg === 'success' && binding.value && cb[binding.arg](binding.value)
+          }, 1000);
+        })
+      }
+    })
+
+    Vue.component('my-copy', {
+      props: {
+        text: String
+      },
+      render: function (h) {
+        return h(
+          'button', {
+            directives: [
+              {
+                name: 'clipbard',
+                rawName: "v-clipbard:copy", // 同名指令唯一key name+arg(加v-是为了统一，根据打印的binding可以看出vue内部是自动添加的)
+                arg: 'copy',
+                value: () => 'render 987654321'
+              },
+              {
+                name: 'clipbard',
+                rawName: "v-clipbard:success",
+                arg: 'success',
+                value: () => console.log('render copied')
+              }
+            ]
+          }, this.text
+        )
+      }
+    });
+
+    
+    new Vue({
+      el: '#app',
+      data() {
+        return {
+          btnText: '复制'
+        }
+      },
+      methods: {
+        doCopy: function () {
+          return '123456789'
+        },
+        onSuccess: function () {
+          console.log('copied')
+        }
+      },
+    })
+  </script>
+</body>
+
+</html>
