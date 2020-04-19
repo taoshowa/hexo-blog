@@ -1,6 +1,7 @@
 ---
 title: vue-render如何渲染多个同名指令
-tags: vue
+date: 2020-04-17 14:52:38
+tags: [vue]
 ---
 本文介绍如何使用render渲染出多个同名指令(使用clipbard举例，其它同理)
 [本文测试代码](../demos/vue/vue-render.html)
