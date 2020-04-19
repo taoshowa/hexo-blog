@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+  <meta charset="utf-8">
+  
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-163855801-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+  
+  <title>直播相关技术 | Tao的博客</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="转载自 https:&#x2F;&#x2F;v3u.cn&#x2F;book&#x2F;zhibo.html 直播原理在视频直播领域，有不同的商家提供各种的商业解决方案，其中比较靠谱的服务商有阿里云直播，腾讯云直播，以及又拍云和网易云的有偿直播服务，服务包括软硬件设备，摄像机，编码器，流媒体服务器等 视频直播的流程可以分为如下几步： 采集 —&gt;处理—&gt;编码和封装—&gt;推流到服务器—&gt;服务器流分发—&gt;播放器流播">
+<meta property="og:type" content="article">
+<meta property="og:title" content="直播相关技术">
+<meta property="og:url" content="https://taoshowa.github.io/hexo-blog/2020/04/19/live/">
+<meta property="og:site_name" content="Tao的博客">
+<meta property="og:description" content="转载自 https:&#x2F;&#x2F;v3u.cn&#x2F;book&#x2F;zhibo.html 直播原理在视频直播领域，有不同的商家提供各种的商业解决方案，其中比较靠谱的服务商有阿里云直播，腾讯云直播，以及又拍云和网易云的有偿直播服务，服务包括软硬件设备，摄像机，编码器，流媒体服务器等 视频直播的流程可以分为如下几步： 采集 —&gt;处理—&gt;编码和封装—&gt;推流到服务器—&gt;服务器流分发—&gt;播放器流播">
+<meta property="og:image" content="https://taoshowa.github.io/hexo-blog/2020/04/19/live/zhibo.jpg">
+<meta property="article:published_time" content="2020-04-19T01:41:19.000Z">
+<meta property="article:modified_time" content="2020-04-19T02:52:23.037Z">
+<meta property="article:author" content="Fei Tao">
+<meta property="article:tag" content="vue">
+<meta property="article:tag" content="live">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://taoshowa.github.io/hexo-blog/2020/04/19/live/zhibo.jpg">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/hexo-blog/css/style.css">
+
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/hexo-blog/" id="logo">Tao的博客</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/hexo-blog/">Home</a>
+        
+          <a class="main-nav-link" href="/hexo-blog/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://taoshowa.github.io/hexo-blog"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-live" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/hexo-blog/2020/04/19/live/" class="article-date">
+  <time datetime="2020-04-19T01:41:19.000Z" itemprop="datePublished">2020-04-19</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      直播相关技术
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>转载自 <a href="https://v3u.cn/book/zhibo.html" target="_blank" rel="noopener">https://v3u.cn/book/zhibo.html</a></p>
+<h2 id="直播原理"><a href="#直播原理" class="headerlink" title="直播原理"></a>直播原理</h2><p>在视频直播领域，有不同的商家提供各种的商业解决方案，其中比较靠谱的服务商有阿里云直播，腾讯云直播，以及又拍云和网易云的有偿直播服务，服务包括软硬件设备，摄像机，编码器，流媒体服务器等</p>
+<p>视频直播的流程可以分为如下几步：</p>
+<p>采集 —&gt;处理—&gt;编码和封装—&gt;推流到服务器—&gt;服务器流分发—&gt;播放器流播放</p>
+<p>一般情况下视频采集处理后推流到流媒体服务器，第一部分功能完成。第二部分就是流媒体服务器，负责把从第一部分接收到的流进行处理并分发给观众。第三部分就是客户端播放，只需要拥有支持流传输协议的播放器即可</p>
+<img src="/hexo-blog/2020/04/19/live/zhibo.jpg" class="">
+
+<p>应用技术点：</p>
+<p>nginx-rtmp搭建直播服务器，配合FFmpeg推流，在网页端vue.js作为载体利用video.js作为流播放器</p>
+<p>具体搭建：&lt;//live-build.html&gt;</p>
+<h2 id="什么叫做“秒开”"><a href="#什么叫做“秒开”" class="headerlink" title="什么叫做“秒开”"></a>什么叫做“秒开”</h2><p>秒开 即从视频播放开始到真正看到第一帧画面所消耗的时间要尽可能的短（几百毫秒时间），不能让观众有明显的等待时间</p>
+<p>这种情况主要依靠第三方服务的优化以及播放器的配合，即依赖阿里云，腾讯云这种三方sdk的优化服务，最快可以实现 200ms 左右 的首屏打开速度，如果网络下行足够够好的话甚至可以秒开，如果是自研的推流服务和播放器则相对困难</p>
+<h2 id="视频卡顿怎么办"><a href="#视频卡顿怎么办" class="headerlink" title="视频卡顿怎么办"></a>视频卡顿怎么办</h2><p>卡顿的原因无外乎三种情况：</p>
+<p>1 帧率太低</p>
+<p>主播端的pc或者手机性能较差，或者有很占 CPU 的后台程序在运行，可能导致视频的帧率太低。正常情况下每秒15FPS以上的视频流才能保证观看的流畅度，如果 FPS 低于10帧，可以判定为帧率太低，这会导致全部观众的观看体验都很卡顿</p>
+<p>2 上传阻塞</p>
+<p>主播的pc或者手机在推流时会源源不断地产生音视频数据，但如果客户端上传网速太小，那么产生的音视频数据都会被堆积在主播的客户端里传不出去，上传阻塞会导致全部观众的观看体验都很卡顿</p>
+<p>3 下行不佳</p>
+<p>就是观众的下载带宽跟不上或者网络很波动，比如直播流的码率是1Mbps的，也就是每秒钟有1M比特的数据流要下载下来，但如果观众端的带宽不够，就会导致观众端体验非常卡顿。 下行不佳只会影响当前网络环境下的观众。</p>
+<h2 id="如何降低延迟"><a href="#如何降低延迟" class="headerlink" title="如何降低延迟"></a>如何降低延迟</h2><p>按正常情况 RTMP 推流+FLV 播放的正常延迟在2秒 - 3秒左右，太长则是有问题的，如果您发现直播延迟时间特别长，可以按照如下思路来排查。</p>
+<p>Step 1. 检查播放协议 不少客户播放协议采用 HLS（m3u8），并感觉延迟较大，这个是正常的。苹果主推的 HLS 是基于大颗粒的 TS 分片的流媒体协议，每个分片都有5s以上的时长，分片数量一般为3个 - 4个，所以总延迟在20s - 30s就不足为怪。 换用 FLV 作为播放协议即可解决这个问题，但是要注意，如果您要在手机浏览器上观看直播视频，只有 HLS（m3u8） 这一种播放协议可以选择，其它的直播协议在苹果的 Safari 浏览器上都是不支持的。</p>
+<p>Step 2. 检查播放器设置</p>
+<p>由于自研应用使用的开源播放器video.js，一些设置可以参考官方文档，如果希望更好的优化，还是建议使用成熟的付费第三方sdk，比如阿里云</p>
+<p>Step 3. 后台不要打水印</p>
+<p>众所周知，FFmpeg有推流打水印的功能，但是这种功能会严重影响直播视频的流畅度</p>
+<p>Step 4. 检查 OBS 设置</p>
+<p>有不少主播喜欢在pc上使用obs推流，播放端延迟比较大。建议调整配置对应的参数，并注意要把关键帧间隔设置为1或者2</p>
+<h2 id="为何推流不成功"><a href="#为何推流不成功" class="headerlink" title="为何推流不成功"></a>为何推流不成功</h2><p>1 直播服务器是否正常启动</p>
+<p>检查nginx服务是否正常启动，端口是否正在监听</p>
+<p>2 网路是否正常？</p>
+<p>RTMP 推流所使用的默认端口号是1935 ，如果您测试时所在网络的防火墙不允许1935端口通行，就会遇到连不上与服务器的问题。此时您可以通过切换网络（比如 4G ）来排查是不是这个原因导致的问题。</p>
+<p>3 推流URL是否被占用？</p>
+<p>一个推流 URL 同时只能有一个推流端，第二个尝试去推流的 Client 会被Nginx服务拒绝掉。</p>
+<h2 id="兼容苹果Mac-os"><a href="#兼容苹果Mac-os" class="headerlink" title="兼容苹果Mac os"></a>兼容苹果Mac os</h2><p>我们知道mac端的Safari浏览器可以直接播放m3u8格式的视频流，所以建议为mac端定制直播页面，降低开发成本</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://taoshowa.github.io/hexo-blog/2020/04/19/live/" data-id="ck96gg9om00011ey278xbb5ai" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/hexo-blog/tags/live/" rel="tag">live</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/hexo-blog/tags/vue/" rel="tag">vue</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/hexo-blog/2020/04/19/live-build/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          利用Docker挂载Nginx-rtmp(服务器直播流分发)+FFmpeg(推流)+Vue.js结合Video.js(播放器流播放)来实现实时网络直播
+        
+      </div>
+    </a>
+  
+  
+    <a href="/hexo-blog/2020/04/17/vue-render/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">vue-render如何渲染多个同名指令</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/hexo-blog/tags/live/" rel="tag">live</a></li><li class="tag-list-item"><a class="tag-list-link" href="/hexo-blog/tags/vue/" rel="tag">vue</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/hexo-blog/tags/live/" style="font-size: 10px;">live</a> <a href="/hexo-blog/tags/vue/" style="font-size: 20px;">vue</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/hexo-blog/archives/2020/04/">April 2020</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/hexo-blog/2020/04/19/live-build/">利用Docker挂载Nginx-rtmp(服务器直播流分发)+FFmpeg(推流)+Vue.js结合Video.js(播放器流播放)来实现实时网络直播</a>
+          </li>
+        
+          <li>
+            <a href="/hexo-blog/2020/04/19/live/">直播相关技术</a>
+          </li>
+        
+          <li>
+            <a href="/hexo-blog/2020/04/17/vue-render/">vue-render如何渲染多个同名指令</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 Fei Tao<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/hexo-blog/" class="mobile-nav-link">Home</a>
+  
+    <a href="/hexo-blog/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+
+
+  
+<link rel="stylesheet" href="/hexo-blog/fancybox/jquery.fancybox.css">
+
+  
+<script src="/hexo-blog/fancybox/jquery.fancybox.pack.js"></script>
+
+
+
+
+<script src="/hexo-blog/js/script.js"></script>
+
+
+
+
+  </div>
+</body>
+</html>

@@ -75,10 +75,10 @@ ga('send', 'pageview');
       <div class="outer">
         <section id="main">
   
-    <article id="post-hello-world" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-live-build" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/hexo-blog/2020/04/17/hello-world/" class="article-date">
-  <time datetime="2020-04-17T09:23:36.699Z" itemprop="datePublished">2020-04-17</time>
+    <a href="/hexo-blog/2020/04/19/live-build/" class="article-date">
+  <time datetime="2020-04-19T01:55:54.000Z" itemprop="datePublished">2020-04-19</time>
 </a>
     
   </div>
@@ -89,7 +89,7 @@ ga('send', 'pageview');
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/hexo-blog/2020/04/17/hello-world/">Hello World</a>
+      <a class="article-title" href="/hexo-blog/2020/04/19/live-build/">利用Docker挂载Nginx-rtmp(服务器直播流分发)+FFmpeg(推流)+Vue.js结合Video.js(播放器流播放)来实现实时网络直播</a>
     </h1>
   
 
@@ -97,26 +97,112 @@ ga('send', 'pageview');
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>Welcome to <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="noopener">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="noopener">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="noopener">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure>
+        <p>转载自 <a href="https://v3u.cn/book/zhibo.html" target="_blank" rel="noopener">https://v3u.cn/book/zhibo.html</a></p>
+<p>众所周知，在视频直播领域，有不同的商家提供各种的商业解决方案，其中比较靠谱的服务商有阿里云直播，腾讯云直播，以及又拍云和网易云的有偿直播服务，服务包括软硬件设备，摄像机，编码器，流媒体服务器等。但是其高昂的费用以及较高的准入门槛让许多个人和小型企业望而却步，本文要讲解的是如何使用nginx-rtmp搭建直播服务器，配合FFmpeg推流，在网页端vue.js作为载体利用video.js作为流播放器，打造一套可用的在线视频直播方案。</p>
+<p>搭建直播服务器是一个漫长而复杂的过程，编译设置有点繁琐。好在docker上有大把别人编译设置好的rtmp环境，所以可以直接拿来用，docker的优越性由此可见一斑，这里用到的是alfg/nginx-rtmp库。</p>
+<p>安装docker，可以在阿里云的镜像上下载比较快一点 <a href="http://mirrors.aliyun.com/docker-toolbox/windows/docker-toolbox/" target="_blank" rel="noopener">http://mirrors.aliyun.com/docker-toolbox/windows/docker-toolbox/</a></p>
+<p>目前稳定版是DockerToolbox-18.03.0-ce.exe 直接点击安装即可<br>安装过程有一点需要注意，必须要开启本机bios的cpu虚化技术</p>
+<p>安装好docker后，下载nginx-rtmp镜像，并且运行服务映射端口到1945和8000</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">docker pull alfg/nginx-rtmp</span><br><span class="line">docker run -it -p 1935:1935 -p 8000:80 --rm alfg/nginx-rtmp</span><br></pre></td></tr></table></figure>
 
-<p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="noopener">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
+<p>访问宿主的8000端口显示nginx欢迎页面</p>
+<img src="/hexo-blog/2020/04/19/live-build/nginx.png" class="">
 
-<p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="noopener">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
+<p>然后利用FFmpeg进行推流操作，ffmpeg是什么请移步：<a href="https://v3u.cn/a_id_74" target="_blank" rel="noopener">Python3利用ffmpeg针对视频进行一些操作</a></p>
+<p>输入命令，注意摄像头和麦必须和电脑的设备吻合，另外推流服务器也要推到刚刚部署好的nginx上面去</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ffmpeg -f dshow -i video=<span class="string">"VMware Virtual USB Video Device"</span>:audio=<span class="string">"Microphone (High Definition Audio Device)"</span> -tune:v zerolatency -f flv <span class="string">"rtmp://192.168.99.100:1935/stream/test"</span></span><br></pre></td></tr></table></figure>
 
-<p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="noopener">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
+<img src="/hexo-blog/2020/04/19/live-build/device.png" class="">
 
-<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html" target="_blank" rel="noopener">Deployment</a></p>
+<p>推流成功后，我们就要在网站上观看现场直播了，这里前端服务我们使用vue.js来搭建，视频流播放器我们使用video.js</p>
+<p>首先建立一个直播的脚手架项目，然后安装一下必要的直播库，最后启动项目</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#建立项目</span></span><br><span class="line">vue init webpack-simple zhibo</span><br><span class="line"><span class="built_in">cd</span> zhibo</span><br><span class="line">yarn install vue-router save</span><br><span class="line">yarn install</span><br><span class="line"></span><br><span class="line"><span class="comment">#安装直播组件</span></span><br><span class="line">yarn install video.js</span><br><span class="line">yarn install aes-decrypter</span><br><span class="line">yarn install m3u8-parser</span><br><span class="line">yarn install mpd-parser</span><br><span class="line">yarn install mux.js</span><br><span class="line">yarn install url-toolkit</span><br><span class="line">yarn install videojs-contrib-hls</span><br><span class="line"></span><br><span class="line"><span class="comment">#热启动项目</span></span><br><span class="line">yarn run dev</span><br></pre></td></tr></table></figure>
+
+<p>新建一个video.vue，添加播放代码</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">template</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">video</span> <span class="attr">id</span>=<span class="string">"my-video"</span> <span class="attr">class</span>=<span class="string">"video-js vjs-default-skin"</span> <span class="attr">controls</span> <span class="attr">preload</span>=<span class="string">"auto"</span> &gt;</span></span><br><span class="line">          <span class="comment">&lt;!-- 直播地址就是nginx映射后的播放地址，注意后缀为直播流的m3u8 --&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">source</span> <span class="attr">src</span>=<span class="string">"http://192.168.99.100:8000/live/test.m3u8"</span> &gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">video</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">template</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="javascript"><span class="keyword">import</span> videojs <span class="keyword">from</span> <span class="string">'video.js'</span></span></span><br><span class="line"><span class="javascript"><span class="keyword">import</span> <span class="string">'videojs-contrib-hls'</span></span></span><br><span class="line"></span><br><span class="line"><span class="javascript"><span class="keyword">export</span> <span class="keyword">default</span> &#123;</span></span><br><span class="line">  data () &#123;</span><br><span class="line"><span class="actionscript">    <span class="keyword">return</span> &#123;&#125;</span></span><br><span class="line">  &#125;,</span><br><span class="line">  mounted() &#123;</span><br><span class="line"><span class="actionscript">    videojs(<span class="string">'my-video'</span>, &#123;</span></span><br><span class="line"><span class="actionscript">      bigPlayButton: <span class="literal">true</span>,</span></span><br><span class="line"><span class="actionscript">      textTrackDisplay: <span class="literal">false</span>,</span></span><br><span class="line"><span class="actionscript">      posterImage: <span class="literal">true</span>,</span></span><br><span class="line"><span class="actionscript">      errorDisplay: <span class="literal">false</span>,</span></span><br><span class="line"><span class="actionscript">      controlBar: <span class="literal">true</span></span></span><br><span class="line"><span class="actionscript">    &#125;, <span class="function"><span class="keyword">function</span> <span class="params">()</span> </span>&#123;</span></span><br><span class="line"><span class="actionscript">      <span class="keyword">this</span>.play()</span></span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">style</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">style</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>最后，在vue.js的路由里绑定video.vue组件，进入浏览器，测试直播播放</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://taoshowa.github.io/hexo-blog/2020/04/17/hello-world/" data-id="ck93zjp5g00003sr9673oh872" class="article-share-link">Share</a>
+      <a data-url="https://taoshowa.github.io/hexo-blog/2020/04/19/live-build/" data-id="ck96gg9oc00001ey21v750tl1" class="article-share-link">Share</a>
       
       
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/hexo-blog/tags/live/" rel="tag">live</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/hexo-blog/tags/vue/" rel="tag">vue</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-live" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/hexo-blog/2020/04/19/live/" class="article-date">
+  <time datetime="2020-04-19T01:41:19.000Z" itemprop="datePublished">2020-04-19</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/hexo-blog/2020/04/19/live/">直播相关技术</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>转载自 <a href="https://v3u.cn/book/zhibo.html" target="_blank" rel="noopener">https://v3u.cn/book/zhibo.html</a></p>
+<h2 id="直播原理"><a href="#直播原理" class="headerlink" title="直播原理"></a>直播原理</h2><p>在视频直播领域，有不同的商家提供各种的商业解决方案，其中比较靠谱的服务商有阿里云直播，腾讯云直播，以及又拍云和网易云的有偿直播服务，服务包括软硬件设备，摄像机，编码器，流媒体服务器等</p>
+<p>视频直播的流程可以分为如下几步：</p>
+<p>采集 —&gt;处理—&gt;编码和封装—&gt;推流到服务器—&gt;服务器流分发—&gt;播放器流播放</p>
+<p>一般情况下视频采集处理后推流到流媒体服务器，第一部分功能完成。第二部分就是流媒体服务器，负责把从第一部分接收到的流进行处理并分发给观众。第三部分就是客户端播放，只需要拥有支持流传输协议的播放器即可</p>
+<img src="/hexo-blog/2020/04/19/live/zhibo.jpg" class="">
+
+<p>应用技术点：</p>
+<p>nginx-rtmp搭建直播服务器，配合FFmpeg推流，在网页端vue.js作为载体利用video.js作为流播放器</p>
+<p>具体搭建：&lt;//live-build.html&gt;</p>
+<h2 id="什么叫做“秒开”"><a href="#什么叫做“秒开”" class="headerlink" title="什么叫做“秒开”"></a>什么叫做“秒开”</h2><p>秒开 即从视频播放开始到真正看到第一帧画面所消耗的时间要尽可能的短（几百毫秒时间），不能让观众有明显的等待时间</p>
+<p>这种情况主要依靠第三方服务的优化以及播放器的配合，即依赖阿里云，腾讯云这种三方sdk的优化服务，最快可以实现 200ms 左右 的首屏打开速度，如果网络下行足够够好的话甚至可以秒开，如果是自研的推流服务和播放器则相对困难</p>
+<h2 id="视频卡顿怎么办"><a href="#视频卡顿怎么办" class="headerlink" title="视频卡顿怎么办"></a>视频卡顿怎么办</h2><p>卡顿的原因无外乎三种情况：</p>
+<p>1 帧率太低</p>
+<p>主播端的pc或者手机性能较差，或者有很占 CPU 的后台程序在运行，可能导致视频的帧率太低。正常情况下每秒15FPS以上的视频流才能保证观看的流畅度，如果 FPS 低于10帧，可以判定为帧率太低，这会导致全部观众的观看体验都很卡顿</p>
+<p>2 上传阻塞</p>
+<p>主播的pc或者手机在推流时会源源不断地产生音视频数据，但如果客户端上传网速太小，那么产生的音视频数据都会被堆积在主播的客户端里传不出去，上传阻塞会导致全部观众的观看体验都很卡顿</p>
+<p>3 下行不佳</p>
+<p>就是观众的下载带宽跟不上或者网络很波动，比如直播流的码率是1Mbps的，也就是每秒钟有1M比特的数据流要下载下来，但如果观众端的带宽不够，就会导致观众端体验非常卡顿。 下行不佳只会影响当前网络环境下的观众。</p>
+<h2 id="如何降低延迟"><a href="#如何降低延迟" class="headerlink" title="如何降低延迟"></a>如何降低延迟</h2><p>按正常情况 RTMP 推流+FLV 播放的正常延迟在2秒 - 3秒左右，太长则是有问题的，如果您发现直播延迟时间特别长，可以按照如下思路来排查。</p>
+<p>Step 1. 检查播放协议 不少客户播放协议采用 HLS（m3u8），并感觉延迟较大，这个是正常的。苹果主推的 HLS 是基于大颗粒的 TS 分片的流媒体协议，每个分片都有5s以上的时长，分片数量一般为3个 - 4个，所以总延迟在20s - 30s就不足为怪。 换用 FLV 作为播放协议即可解决这个问题，但是要注意，如果您要在手机浏览器上观看直播视频，只有 HLS（m3u8） 这一种播放协议可以选择，其它的直播协议在苹果的 Safari 浏览器上都是不支持的。</p>
+<p>Step 2. 检查播放器设置</p>
+<p>由于自研应用使用的开源播放器video.js，一些设置可以参考官方文档，如果希望更好的优化，还是建议使用成熟的付费第三方sdk，比如阿里云</p>
+<p>Step 3. 后台不要打水印</p>
+<p>众所周知，FFmpeg有推流打水印的功能，但是这种功能会严重影响直播视频的流畅度</p>
+<p>Step 4. 检查 OBS 设置</p>
+<p>有不少主播喜欢在pc上使用obs推流，播放端延迟比较大。建议调整配置对应的参数，并注意要把关键帧间隔设置为1或者2</p>
+<h2 id="为何推流不成功"><a href="#为何推流不成功" class="headerlink" title="为何推流不成功"></a>为何推流不成功</h2><p>1 直播服务器是否正常启动</p>
+<p>检查nginx服务是否正常启动，端口是否正在监听</p>
+<p>2 网路是否正常？</p>
+<p>RTMP 推流所使用的默认端口号是1935 ，如果您测试时所在网络的防火墙不允许1935端口通行，就会遇到连不上与服务器的问题。此时您可以通过切换网络（比如 4G ）来排查是不是这个原因导致的问题。</p>
+<p>3 推流URL是否被占用？</p>
+<p>一个推流 URL 同时只能有一个推流端，第二个尝试去推流的 Client 会被Nginx服务拒绝掉。</p>
+<h2 id="兼容苹果Mac-os"><a href="#兼容苹果Mac-os" class="headerlink" title="兼容苹果Mac os"></a>兼容苹果Mac os</h2><p>我们知道mac端的Safari浏览器可以直接播放m3u8格式的视频流，所以建议为mac端定制直播页面，降低开发成本</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://taoshowa.github.io/hexo-blog/2020/04/19/live/" data-id="ck96gg9om00011ey278xbb5ai" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/hexo-blog/tags/live/" rel="tag">live</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/hexo-blog/tags/vue/" rel="tag">vue</a></li></ul>
+
     </footer>
   </div>
   
@@ -127,7 +213,7 @@ ga('send', 'pageview');
     <article id="post-vue-render" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/hexo-blog/2020/04/17/vue-render/" class="article-date">
-  <time datetime="2020-04-17T09:23:36.699Z" itemprop="datePublished">2020-04-17</time>
+  <time datetime="2020-04-17T06:52:38.000Z" itemprop="datePublished">2020-04-17</time>
 </a>
     
   </div>
@@ -170,7 +256,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://taoshowa.github.io/hexo-blog/2020/04/17/vue-render/" data-id="ck93zjp5q00013sr98ml8hwie" class="article-share-link">Share</a>
+      <a data-url="https://taoshowa.github.io/hexo-blog/2020/04/17/vue-render/" data-id="ck96gg9oq00031ey2escx378z" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/hexo-blog/tags/vue/" rel="tag">vue</a></li></ul>
@@ -195,7 +281,7 @@ ga('send', 'pageview');
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/hexo-blog/tags/vue/" rel="tag">vue</a></li></ul>
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/hexo-blog/tags/live/" rel="tag">live</a></li><li class="tag-list-item"><a class="tag-list-link" href="/hexo-blog/tags/vue/" rel="tag">vue</a></li></ul>
     </div>
   </div>
 
@@ -205,7 +291,7 @@ ga('send', 'pageview');
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/hexo-blog/tags/vue/" style="font-size: 10px;">vue</a>
+      <a href="/hexo-blog/tags/live/" style="font-size: 10px;">live</a> <a href="/hexo-blog/tags/vue/" style="font-size: 20px;">vue</a>
     </div>
   </div>
 
@@ -227,7 +313,11 @@ ga('send', 'pageview');
       <ul>
         
           <li>
-            <a href="/hexo-blog/2020/04/17/hello-world/">Hello World</a>
+            <a href="/hexo-blog/2020/04/19/live-build/">利用Docker挂载Nginx-rtmp(服务器直播流分发)+FFmpeg(推流)+Vue.js结合Video.js(播放器流播放)来实现实时网络直播</a>
+          </li>
+        
+          <li>
+            <a href="/hexo-blog/2020/04/19/live/">直播相关技术</a>
           </li>
         
           <li>
