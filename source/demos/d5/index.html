@@ -4,20 +4,43 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>第五人格随机角色选择</title>
+    <style>
+        .container {
+            padding: 20px;
+        }
+        .buttons {
+            display: flex;
+            * {
+                margin: 4px;
+            }
+        }
+        #selectedHistory li {
+            padding: 10px;
+        }
+    </style>
 </head>
 <body>
-    <h1>第五人格随机角色选择</h1>
-    <button onclick="selectCharacters()">选择角色</button>
-    <button id="back" disabled onclick="goBack()">取消本次选择</button>
-    <button onclick="clearHistory()">清空历史</button>
-    <div id="result"></div>
-    <h2>历史记录:</h2>
-    <ul id="selectedHistory"></ul>
+    <div class="container">
+        <h1>第五人格随机角色选择</h1>
+        <div class="buttons">
+            <input type="checkbox" name="allMaps" id="allMaps">
+            <label for="allMaps">包含非比赛地图</label>
+            <button onclick="selectCharacters()">随机地图和角色</button>
+            <button id="back" disabled onclick="goBack()">取消本次随机</button>
+            <button onclick="clearHistory()">重置</button>
+        </div>
+        <div id="result"></div>
+        <h2>历史记录:</h2>
+        <ul id="selectedHistory"></ul>
+    </div>
 
     <script>
         // 角色池
         const survivors = ['医生', '律师', '慈善家', '园丁', '魔术师', '冒险家', '佣兵', '空军', '机械师', '前锋', '盲女', '祭司', '调香师', '牛仔', '舞女', '先知', '入殓师', '勘探员', '咒术师', '野人', '杂技演员', '大副', '调酒师', '邮差', '守墓人', '囚徒', '昆虫学者', '画家', '击球手', '玩具商', '病患', '心理学家', '小女孩', '哭泣小丑', '教授', '古董商', '作曲家', '记者', '飞行家', '拉拉队员', '幸运儿'];
         const hunters = ['厂长', '小丑', '鹿头', '杰克', '蜘蛛', '红蝶', '黄衣之主', '宿伞之魂', '摄影师', '疯眼', '梦之女巫', '爱哭鬼', '孽蜥', '红夫人', '26号守卫', '使徒', '小提琴家', '雕刻家', '博士', '破轮', '渔女', '蜡像师', '噩梦', '记录员', '隐士', '守夜人', '歌剧演员', '时空之影'];
+        const maps = ['军工厂', '红教堂', '圣心医院', '湖景村', '月亮河公园', '里奥的回忆', '永眠镇', '唐人街']
+        const elseMaps = ['白沙街疯人院', '不归林', '闪金石窟', '克雷伯格赛马场']
+        const allMaps = maps.concat(elseMaps)
 
         const selectedHistory = []; // 存储历史记录
         const selectedSurvivors = []; // 存储已选择的求生者
@@ -26,6 +49,11 @@
         renderSelected()
 
         function selectCharacters() {
+            const isAllMap = document.getElementById('allMaps')
+            const mapList = isAllMap.checked ? allMaps : maps
+            // 随机地图
+            const mapIndex = Math.floor(Math.random() * mapList.length);
+            const newSelectedMap = mapList[mapIndex];
             // 随机选择4个求生者
             const leftSurvivors = selectedSurvivors.length ? survivors.filter(name => !selectedSurvivors.includes(name)) : [...survivors]
             if (leftSurvivors.length < 4) {
@@ -33,25 +61,25 @@
                 return
             }
             const newSelectedSurvivors = leftSurvivors.sort((a, b) => Math.random() > 0.3 ? a.localeCompare(b) : b.localeCompare(a)).slice(0, 4)
-
             // 随机选择1个监管者
             const leftHunters = selectedHunters.length ? hunters.filter(name => !selectedHunters.includes(name)) : [...hunters]
             if (leftHunters.length < 1) {
                 alert('剩余可选监管者不足，请清空历史后再试')
                 return
             }
-            const randomIndex = Math.floor(Math.random() * leftHunters.length);
-            const newSelectedHunters = [leftHunters[randomIndex]];
+            const hunterIndex = Math.floor(Math.random() * leftHunters.length);
+            const newSelectedHunter = leftHunters[hunterIndex];
 
             // 更新已选择的角色列表
             selectedSurvivors.push(...newSelectedSurvivors);
-            selectedHunters.push(...newSelectedHunters);
-            renderSelected();
+            selectedHunters.push(...newSelectedHunter);
             // 记录这次抽取结果
             selectedHistory.push({
+                map: newSelectedMap,
+                hunter: newSelectedHunter,
                 survivors: newSelectedSurvivors,
-                hunters: newSelectedHunters
             });
+            renderSelected();
             renderHistory();
         }
 
@@ -74,10 +102,12 @@
         }
 
         function renderSelected() {
+            const current = selectedHistory.slice(-1)[0] || {map: '', hunter: '', survivors: []};
             const result = document.getElementById('result');
             result.innerHTML = `<h2>选择的角色:</h2>
-                                <p>求生者: ${selectedSurvivors.slice(-4).join(', ')}</p>
-                                <p>监管者: ${selectedHunters.slice(-1).join(', ')}</p>`;
+                                <p>地图: ${current.map}</p>
+                                <p>求生者: ${current.survivors.join(', ')}</p>
+                                <p>监管者: ${current.hunter}</p>`;
         }
 
         function renderHistory() {
@@ -89,7 +119,7 @@
             for (let i = 0; i < selectedHistory.length; i++) {
                 const entry = selectedHistory[i];
                 const listItem = document.createElement('li');
-                listItem.textContent = `第${i + 1}局---求生者: ${entry.survivors.join(', ')} | 监管者: ${entry.hunters.join(', ')}`;
+                listItem.textContent = `第${i + 1}局---地图: ${entry.map} | 求生者: ${entry.survivors.join(', ')} | 监管者: ${entry.hunter}`;
                 historyList.appendChild(listItem);
             }
         }
