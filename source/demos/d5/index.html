@@ -3,8 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>第五人格随机角色选择</title>
+    <title>第五人格随机玩法</title>
     <style>
+        body {
+            background: linear-gradient(
+                rgba(255, 255, 255, 0.7), 
+                rgba(255, 255, 255, 0.7)
+            ), 
+            url('./assets/20240410002754.jpg') top center;
+        }
         .container {
             padding: 20px;
         }
@@ -14,6 +21,14 @@
                 margin: 4px;
             }
         }
+        /* input number fix */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
         #selectedHistory li {
             padding: 10px;
         }
@@ -21,7 +36,11 @@
 </head>
 <body>
     <div class="container">
-        <h1>第五人格随机角色选择</h1>
+        <h1>第五人格随机玩法</h1>
+        <div>
+            当前对局人数<input style="width: 40px" id="number" type="number" placeholder="5" value="5" min="5" max="10">
+            在此人数中随机5位
+        </div>
         <div class="buttons">
             <input type="checkbox" name="allMaps" id="allMaps">
             <label for="allMaps">包含非比赛地图</label>
@@ -48,7 +67,27 @@
         
         renderSelected()
 
+        function randomArrayNumber(data = [], count = 5) {
+            const numbers = []
+            while (numbers.length < count) {
+                const number = Math.floor(Math.random() * data.length)
+                if (data[number] !== undefined && !numbers.includes(data[number])) {
+                    numbers.push(data[number])
+                }
+            }
+            return numbers
+        }
+        function randomArrayString(data = []) {
+            return [...data].sort((a, b) => Math.random() > 0.3 ? a.localeCompare(b) : b.localeCompare(a))
+        }
+
         function selectCharacters() {
+            let number = +document.getElementById('number').value;
+            number = number > 5 ? number : 5;
+            const seatNumbers = Array(number).fill().map((_, i) => i)
+            const chooseNumbers = randomArrayNumber(seatNumbers)
+            const [hunterNumber, ...survivorNumbers] = chooseNumbers
+
             const isAllMap = document.getElementById('allMaps')
             const mapList = isAllMap.checked ? allMaps : maps
             // 随机地图
@@ -60,7 +99,7 @@
                 alert('剩余可选求生者不足，请清空历史后再试')
                 return
             }
-            const newSelectedSurvivors = leftSurvivors.sort((a, b) => Math.random() > 0.3 ? a.localeCompare(b) : b.localeCompare(a)).slice(0, 4)
+            const newSelectedSurvivors = randomArrayString(leftSurvivors).slice(0, 4)
             // 随机选择1个监管者
             const leftHunters = selectedHunters.length ? hunters.filter(name => !selectedHunters.includes(name)) : [...hunters]
             if (leftHunters.length < 1) {
@@ -75,6 +114,8 @@
             selectedHunters.push(...newSelectedHunter);
             // 记录这次抽取结果
             selectedHistory.push({
+                hunterNumber,
+                survivorNumbers: survivorNumbers.sort(),
                 map: newSelectedMap,
                 hunter: newSelectedHunter,
                 survivors: newSelectedSurvivors,
@@ -102,9 +143,17 @@
         }
 
         function renderSelected() {
-            const current = selectedHistory.slice(-1)[0] || {map: '', hunter: '', survivors: []};
+            const defaultItem = {
+                map: '',
+                hunter: '',
+                survivors: [],
+                hunterNumber: '',
+                survivorNumbers: []
+            }
+            const current = selectedHistory.slice(-1)[0] || defaultItem;
             const result = document.getElementById('result');
-            result.innerHTML = `<h2>选择的角色:</h2>
+            result.innerHTML = `<h2>当前对局:</h2>
+                                <p>${current.hunterNumber !== '' ? `求生麦序：${current.survivorNumbers.join(' ')}，监管麦序：${current.hunterNumber}` : ''}</p>
                                 <p>地图: ${current.map}</p>
                                 <p>求生者: ${current.survivors.join(', ')}</p>
                                 <p>监管者: ${current.hunter}</p>`;
