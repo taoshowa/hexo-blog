@@ -4,7 +4,7 @@ date: 2020-04-17 14:52:38
 tags: [vue]
 ---
 本文介绍如何使用render渲染出多个同名指令(使用clipbard举例，其它同理)
-[本文测试代码](../demos/vue/vue-render.html)
+[本文测试代码](/demos/vue/vue-render.html)
 
 ```html
 <button v-clipbard:copy="doCopy" v-clipbard:success="onSuccess">复制</button>
@@ -95,4 +95,4 @@ template会自动生成rawName以v-name:arg格式，跟template中绑定的指�
 
 为了与内部生成的rawName规范统一，我们也可以把rawName写成name:arg或v-name:arg的格式。
 
-[本文测试代码](../demos/vue-render.html)
+[本文测试代码](/demos/vue-render.html)
