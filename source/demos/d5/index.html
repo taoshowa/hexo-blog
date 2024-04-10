@@ -91,23 +91,31 @@
             const seatNumbers = Array(number).fill().map((_, i) => i)
             const chooseNumbers = randomArrayNumber(seatNumbers)
             const [hunterNumber, ...survivorNumbers] = chooseNumbers
-
+            // 随机地图
             const isAllMap = document.getElementById('allMaps')
             const mapList = isAllMap.checked ? allMaps : maps
-            // 随机地图
-            const mapIndex = Math.floor(Math.random() * mapList.length);
-            const newSelectedMap = mapList[mapIndex];
+            const selectedMaps = selectedHistory.map(h => h.map)
+            let mapIndex = Math.floor(Math.random() * mapList.length)
+            let newSelectedMap = mapList[mapIndex]
+            if (selectedMaps.length === mapList.length) {
+                alert('剩余地图不足，请重置后再试')
+                return
+            }
+            while (selectedMaps.includes(newSelectedMap)) {
+                mapIndex = Math.floor(Math.random() * mapList.length)
+                newSelectedMap = mapList[mapIndex]
+            }
             // 随机选择4个求生者
             const leftSurvivors = selectedSurvivors.length ? survivors.filter(name => !selectedSurvivors.includes(name)) : [...survivors]
             if (leftSurvivors.length < 4) {
-                alert('剩余可选求生者不足，请清空历史后再试')
+                alert('剩余可选求生者不足，请重置后再试')
                 return
             }
             const newSelectedSurvivors = randomArrayString(leftSurvivors).slice(0, 4)
             // 随机选择1个监管者
             const leftHunters = selectedHunters.length ? hunters.filter(name => !selectedHunters.includes(name)) : [...hunters]
             if (leftHunters.length < 1) {
-                alert('剩余可选监管者不足，请清空历史后再试')
+                alert('剩余可选监管者不足，请重置后再试')
                 return
             }
             const hunterIndex = Math.floor(Math.random() * leftHunters.length);
