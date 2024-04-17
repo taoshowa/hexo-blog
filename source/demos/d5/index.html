@@ -41,14 +41,19 @@
 <body>
     <div class="container">
         <h1>第五人格随机玩法</h1>
-        <div>
-            当前对局人数<input style="width: 40px" id="number" type="number" placeholder="5" value="5" min="5" max="10">
-            在此人数中随机5位
+        <div style="display: flex; gap: 10px;">
+            <div id="normal">
+                当前对局人数<input style="width: 40px" id="number" type="number" placeholder="5" value="5" min="5" max="10">在此人数中随机5位
+            </div>
+            <div>
+                <input type="checkbox" name="notNormal" id="notNormal" onchange="modeChange()">
+                <label for="notNormal">联合狩猎</label>
+            </div>
         </div>
         <div class="buttons">
             <input type="checkbox" name="allMaps" id="allMaps">
             <label for="allMaps">包含非比赛地图</label>
-            <button onclick="selectCharacters()">随机地图和角色</button>
+            <button onclick="randomOnce()">随机地图和角色</button>
             <button id="back" disabled onclick="goBack()">取消本次随机</button>
             <button onclick="clearHistory()">重置</button>
         </div>
@@ -64,16 +69,33 @@
         const maps = ['军工厂', '红教堂', '圣心医院', '湖景村', '月亮河公园', '里奥的回忆', '永眠镇', '唐人街']
         const elseMaps = ['白沙街疯人院', '不归林', '闪金石窟', '克雷伯格赛马场']
         const allMaps = maps.concat(elseMaps)
+        
+        const hunterMaps = ['湖景村', '月亮河公园', '永眠镇', '永眠镇大']
+        // const hunterOut = ['摄影师', '梦之女巫', '博士', '记录员']
+        // const newHunters = hunters.filter(item => !hunterOut.includes(item))
 
         const selectedHistory = []; // 存储历史记录
         const selectedSurvivors = []; // 存储已选择的求生者
         const selectedHunters = []; // 存储已选择的监管者
         let randomIng = false
+        let notNormal = false
         
         renderSelected()
 
-        function randomArrayNumber(data = [], count = 5) {
+        function modeChange() {
+            const normalNumber = document.querySelector('#number')
+            const allMapSelect = document.querySelector('#allMaps')
+            notNormal = document.querySelector('#notNormal').checked
+            allMapSelect.disabled = normalNumber.disabled = notNormal
+            clearHistory()
+        }
+
+        function randomSeat(data = [], count = 5) {
             const numbers = []
+            if (notNormal) {
+                const randomOne = randomArrayNumber([...data]).reverse()
+                return randomArrayNumber([...randomOne])
+            }
             while (numbers.length < count) {
                 const number = Math.floor(Math.random() * data.length)
                 if (data[number] !== undefined && !numbers.includes(data[number])) {
@@ -82,18 +104,46 @@
             }
             return numbers
         }
+        function randomArrayNumber(data = []) {
+            return [...data].sort((a, b) => Math.random() > 0.3 ? a - b : b - a)
+        }
         function randomArrayString(data = []) {
             return [...data].sort((a, b) => Math.random() > 0.3 ? a.localeCompare(b) : b.localeCompare(a))
         }
+        
+        function randomOnce() {
+            if (randomIng) return
+            randomIng = true;
+            selectCharacters();
+            randomIng = false
+        }
 
         function selectCharacters() {
-            if (randomIng) return;
-            randomIng = true;
+            // 随机麦序
             let number = +document.getElementById('number').value;
-            number = number > 5 ? number : 5;
+            number = number > 5 ? number : notNormal ? 10 : 5;
             const seatNumbers = Array(number).fill().map((_, i) => i)
-            const chooseNumbers = randomArrayNumber(seatNumbers)
-            const [hunterNumber, ...survivorNumbers] = chooseNumbers
+            const chooseNumbers = randomSeat(seatNumbers)
+            let hunterNumbers, survivorNumbers, hunterMap = ''
+            if (notNormal) {
+                const hunterIndex = Math.floor(Math.random() * hunterMaps.length)
+                hunterNumbers = chooseNumbers.slice(0, 2)
+                hunterMap = hunterMaps[hunterIndex]
+
+                selectedHistory.push({
+                    hunterNumbers,
+                    survivorNumbers: [],
+                    map: hunterMap,
+                    hunter: '自选',
+                    survivors: ['自选'],
+                });
+                renderSelected();
+                renderHistory();
+                return
+            }
+            let [hNumber, ...sNumbers] = chooseNumbers
+            hunterNumbers = [hNumber]
+            survivorNumbers = sNumbers
             // 随机地图
             const isAllMap = document.getElementById('allMaps')
             const mapList = isAllMap.checked ? allMaps : maps
@@ -129,7 +179,7 @@
             selectedHunters.push(...newSelectedHunter);
             // 记录这次抽取结果
             selectedHistory.push({
-                hunterNumber,
+                hunterNumbers,
                 survivorNumbers: survivorNumbers.sort(),
                 map: newSelectedMap,
                 hunter: newSelectedHunter,
@@ -137,7 +187,6 @@
             });
             renderSelected();
             renderHistory();
-            randomIng = false;
         }
 
         function clearHistory() {
@@ -163,13 +212,13 @@
                 map: '',
                 hunter: '',
                 survivors: [],
-                hunterNumber: '',
+                hunterNumbers: [],
                 survivorNumbers: []
             }
             const current = selectedHistory.slice(-1)[0] || defaultItem;
             const result = document.getElementById('result');
             result.innerHTML = `<h2>当前对局:</h2>
-                                <p>${current.hunterNumber !== '' ? `求生麦序：${current.survivorNumbers.join(' ')}，监管麦序：${current.hunterNumber}` : ''}</p>
+                                <p>${notNormal ? '' : `求生麦序：${current.survivorNumbers.join(' ')}`}${`监管麦序：${current.hunterNumbers.join(' ')}`}</p>
                                 <p>地图: ${current.map}</p>
                                 <p>求生者: ${current.survivors.join(', ')}</p>
                                 <p>监管者: ${current.hunter}</p>`;
